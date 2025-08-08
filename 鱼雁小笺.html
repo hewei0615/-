@@ -1,0 +1,2444 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>鱼雁小笺</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'STKaiti', 'KaiTi', 'SimKai', serif;
+      }
+
+      :root {
+        --primary: #7f9e8a;
+        --secondary: #cde0d5;
+        --accent: #4b876d;
+        --text: #3c4d43;
+        --light: #f0f5f1;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --notification-red: #c62828;
+        --header-gradient: linear-gradient(-45deg, #a8d8b9, #87bfa0, #67a687, #4b876d);
+        --receiver-bubble-gradient: linear-gradient(to right, rgba(205, 224, 213, 0.85), rgba(255, 255, 255, 0.85));
+        --sender-bubble-gradient: linear-gradient(to left, rgba(127, 158, 138, 0.85), rgba(75, 135, 109, 0.85));
+        --focus-shadow: rgba(127, 158, 138, 0.3);
+        --random-quote-bg: rgba(240, 245, 241, 0.7);
+        --breathe-shadow: rgba(75, 135, 109, 0.2);
+      }
+
+      @keyframes flowGradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          transform: scale(1.04);
+          box-shadow: 0 4px 16px var(--breathe-shadow);
+        }
+      }
+
+      body {
+        /* Background set by JS */
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text);
+        transition: background 0.5s ease;
+      }
+
+      .container {
+        width: 95%;
+        max-width: 500px;
+        height: 90vh;
+        background-color: var(--light);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        color: var(--light);
+        padding: 16px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--header-gradient);
+        background-size: 400% 400%;
+        animation: flowGradient 15s ease infinite;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        letter-spacing: 3px;
+      }
+
+      #theme-toggle-button {
+        position: absolute;
+        top: 50%;
+        right: 16px;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(2px);
+      }
+
+      #theme-toggle-button:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .contacts-page {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background-position: center;
+        background-size: cover;
+        display: flex;
+        flex-direction: column;
+        transition: background 0.5s ease;
+      }
+
+      .contact-list {
+        list-style: none;
+        flex-shrink: 0;
+      }
+
+      .contact-item {
+        background: rgba(255, 255, 255, 0.85);
+        margin: 12px 0;
+        padding: 16px;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(3px);
+        border-left: none;
+      }
+
+      .contact-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.95);
+      }
+
+      .contact-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--header-gradient);
+        background-size: 400% 400%;
+        animation: flowGradient 15s ease infinite reverse;
+        z-index: 1;
+      }
+
+      .avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 16px;
+        position: relative;
+        border: 2px solid var(--accent);
+        animation: breathe 5s ease-in-out infinite;
+      }
+
+      .avatar-wrapper {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .avatar::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px solid var(--light);
+        opacity: 0.3;
+      }
+
+      .contact-info {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .contact-name-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .contact-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+
+      .new-badge {
+        background-color: var(--notification-red);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .contact-item.new .new-badge {
+        display: inline-block;
+      }
+
+      .last-message {
+        font-size: 0.8rem;
+        color: var(--primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+
+      .random-image-container {
+        margin-top: 20px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        backdrop-filter: blur(2px);
+        cursor: pointer;
+      }
+
+      #randomImage {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+        display: block;
+      }
+
+      .random-quote {
+        color: var(--accent);
+        font-size: 0.9rem;
+        padding: 8px 12px;
+        margin-top: 10px;
+        text-align: center;
+        font-style: italic;
+        background-color: var(--random-quote-bg);
+        border-radius: 4px;
+        width: 100%;
+        transition: opacity 0.5s ease;
+      }
+
+      .chat-page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--light);
+        transform: translateX(100%);
+        transition: transform 0.4s ease;
+        z-index: 20;
+      }
+
+      .chat-page.active {
+        transform: translateX(0);
+      }
+
+      .chat-header {
+        color: var(--light);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        background: var(--header-gradient);
+        background-size: 400% 400%;
+        animation: flowGradient 15s ease infinite;
+      }
+
+      .back-button {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--light);
+        font-size: 1.8rem;
+        font-weight: bold;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        border: none;
+        z-index: 10;
+        line-height: 1;
+        padding-bottom: 4px;
+        background: var(--header-gradient);
+        background-size: 400% 400%;
+        animation: flowGradient 15s ease infinite;
+      }
+
+      .back-button:hover {
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .chat-title {
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+        flex: 1;
+        text-align: center;
+        padding: 0 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .chat-title .chat-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--light);
+        margin-right: 10px;
+        animation: breathe 5s ease-in-out infinite;
+      }
+
+      .message-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background-position: center;
+        background-size: cover;
+        transition: background 0.5s ease;
+      }
+
+      .message-list {
+        list-style: none;
+      }
+
+      .message-item {
+        display: flex;
+        max-width: 80%;
+        margin-bottom: 16px;
+        animation: fadeIn 0.5s ease;
+        position: relative;
+        user-select: none;
+        transition: all 0.3s ease;
+      }
+
+      /* 删除确认对话框样式 */
+      .delete-confirm-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .delete-confirm-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .delete-confirm-dialog {
+        background: var(--light);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 320px;
+        width: 90%;
+        box-shadow: var(--shadow);
+        text-align: center;
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+      }
+
+      .delete-confirm-overlay.show .delete-confirm-dialog {
+        transform: scale(1);
+      }
+
+      .delete-confirm-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--text);
+        margin-bottom: 12px;
+      }
+
+      .delete-confirm-message {
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      .delete-confirm-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .delete-confirm-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 80px;
+      }
+
+      .delete-confirm-btn.cancel {
+        background: var(--secondary);
+        color: var(--text);
+      }
+
+      .delete-confirm-btn.cancel:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      .delete-confirm-btn.confirm {
+        background: var(--notification-red);
+        color: white;
+      }
+
+      .delete-confirm-btn.confirm:hover {
+        background: #a52a2a;
+        transform: scale(1.05);
+      }
+
+      /* 新消息弹窗样式 - 仿QQ/微信长方形设计 */
+      .message-notification {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: var(--light);
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        z-index: 2000;
+        width: 320px;
+        min-height: 72px;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        pointer-events: none;
+        font-family: 'STKaiti', 'KaiTi', 'SimKai', serif;
+        overflow: hidden;
+      }
+
+      .message-notification.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+      }
+
+      .message-notification::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+      }
+
+      .notification-header {
+        background: var(--primary);
+        color: white;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .notification-body {
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--light);
+      }
+
+      .notification-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--secondary);
+        flex-shrink: 0;
+        background: var(--secondary);
+      }
+
+      .notification-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .notification-name {
+        font-weight: bold;
+        color: var(--text);
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .notification-text {
+        color: var(--primary);
+        font-size: 0.85rem;
+        line-height: 1.4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        opacity: 0.8;
+      }
+
+      .notification-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+      }
+
+      .notification-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* 当前联系人消息样式 */
+      .message-notification.current-contact .notification-body {
+        justify-content: center;
+        text-align: center;
+        padding: 16px 12px;
+      }
+
+      .message-notification.current-contact .notification-current-text {
+        font-size: 1rem;
+        color: var(--primary);
+        font-weight: bold;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 480px) {
+        .message-notification {
+          right: 10px;
+          width: calc(100vw - 20px);
+          max-width: 320px;
+        }
+      }
+
+      .message-item.sender {
+        margin-left: auto;
+        flex-direction: row-reverse;
+      }
+
+      .message-item.receiver {
+        margin-right: auto;
+        flex-direction: row;
+      }
+
+      .sender-badge {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: white;
+        flex-shrink: 0;
+        margin: 0 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .sender-badge.jin {
+        background-color: var(--accent);
+      }
+
+      .sender-badge.yu {
+        background-color: var(--primary);
+      }
+
+      .message-content-wrapper {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sender .message-content-wrapper {
+        align-items: flex-end;
+      }
+
+      .receiver .message-content-wrapper {
+        align-items: flex-start;
+      }
+
+      .message-content {
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+        box-shadow: var(--shadow);
+        font-size: 1.1rem;
+        backdrop-filter: blur(2px);
+      }
+
+      .receiver .message-content {
+        background: var(--receiver-bubble-gradient);
+        border-bottom-left-radius: 2px;
+      }
+
+      .sender .message-content {
+        background: var(--sender-bubble-gradient);
+        color: white;
+        border-bottom-right-radius: 2px;
+      }
+
+      .message-time {
+        font-size: 0.7rem;
+        margin-top: 4px;
+        opacity: 0.7;
+        padding: 0 8px;
+      }
+
+      .input-container {
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        border-top: 1px solid var(--secondary);
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(3px);
+      }
+
+      .message-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid var(--secondary);
+        border-radius: 24px;
+        font-size: 1.1rem;
+        outline: none;
+        transition: all 0.3s ease;
+        background: var(--light);
+      }
+
+      .message-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 8px var(--focus-shadow);
+      }
+
+      .send-button {
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        margin-left: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+        background: var(--header-gradient);
+        background-size: 400% 400%;
+        animation: flowGradient 15s ease infinite;
+      }
+
+      .send-button:hover {
+        transform: scale(1.05);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          height: 95vh;
+          width: 98%;
+          border-radius: 10px;
+        }
+        .header h1 {
+          font-size: 1.3rem;
+        }
+        .contact-item {
+          padding: 12px;
+        }
+        .avatar {
+          width: 55px;
+          height: 55px;
+        }
+        .back-button {
+          width: 36px;
+          height: 36px;
+          font-size: 1.7rem;
+        }
+        .chat-title .chat-avatar {
+          width: 32px;
+          height: 32px;
+        }
+        .chat-title {
+          font-size: 1.2rem;
+          padding: 0 50px;
+        }
+        .message-content {
+          font-size: 1rem;
+          padding: 10px 14px;
+        }
+        .message-input {
+          padding: 10px 14px;
+          font-size: 1rem;
+        }
+        .send-button {
+          width: 42px;
+          height: 42px;
+          font-size: 1.3rem;
+        }
+        .sender-badge {
+          width: 26px;
+          height: 26px;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="data-source" style="display: none">$1</div>
+
+    <div class="container">
+      <div class="header">
+        <h1 id="mainTitle">鱼雁小笺</h1>
+        <button id="theme-toggle-button">🎨</button>
+      </div>
+
+      <div class="contacts-page" id="contactsPage">
+        <ul class="contact-list" id="contactList"></ul>
+        <div class="random-image-container" id="randomImageContainer">
+          <img id="randomImage" src="" alt="山水画卷" />
+          <p id="randomQuote" class="random-quote"></p>
+        </div>
+      </div>
+
+      <div class="chat-page" id="chatPage">
+        <div class="chat-header">
+          <button class="back-button" id="backButton">&lt;</button>
+          <div class="chat-title" id="chatTitle"></div>
+        </div>
+        <div class="message-container" id="messageContainer">
+          <ul class="message-list" id="messageList"></ul>
+        </div>
+        <div class="input-container">
+          <input type="text" class="message-input" id="messageInput" placeholder="鸿雁传书" />
+          <button class="send-button" id="sendButton">↗</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 删除确认对话框 -->
+    <div class="delete-confirm-overlay" id="deleteConfirmOverlay">
+      <div class="delete-confirm-dialog">
+        <div class="delete-confirm-title">删除消息</div>
+        <div class="delete-confirm-message" id="deleteConfirmMessage">确定要删除这条消息吗？</div>
+        <div class="delete-confirm-buttons">
+          <button class="delete-confirm-btn cancel" id="deleteCancelBtn">取消</button>
+          <button class="delete-confirm-btn confirm" id="deleteConfirmBtn">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新消息弹窗 -->
+    <div class="message-notification" id="messageNotification">
+      <div id="notificationContent"></div>
+    </div>
+
+    <script>
+      const themes = [
+        {
+          name: 'default',
+          colors: {
+            '--primary': '#7f9e8a',
+            '--secondary': '#cde0d5',
+            '--accent': '#4b876d',
+            '--text': '#3c4d43',
+            '--light': '#f0f5f1',
+            '--header-gradient': 'linear-gradient(-45deg, #a8d8b9, #87bfa0, #67a687, #4b876d)',
+            '--receiver-bubble-gradient':
+              'linear-gradient(to right, rgba(205, 224, 213, 0.85), rgba(255, 255, 255, 0.85))',
+            '--sender-bubble-gradient': 'linear-gradient(to left, rgba(127, 158, 138, 0.85), rgba(75, 135, 109, 0.85))',
+            '--focus-shadow': 'rgba(127, 158, 138, 0.3)',
+            '--random-quote-bg': 'rgba(240, 245, 241, 0.7)',
+            '--breathe-shadow': 'rgba(75, 135, 109, 0.2)',
+          },
+          backgrounds: {
+            body: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f0f5f1"/><path d="M0,50 Q25,30 50,50 T100,50" stroke="%23cde0d5" stroke-width="2" fill="none"/></svg>\')',
+            contacts: "url('https://files.catbox.moe/sebp8s.jpg')",
+            messages: "url('https://files.catbox.moe/smtv5t.png')",
+          },
+        },
+        {
+          name: 'brown',
+          colors: {
+            '--primary': '#8d6e63',
+            '--secondary': '#d7ccc8',
+            '--accent': '#5d4037',
+            '--text': '#4e342e',
+            '--light': '#efebe9',
+            '--header-gradient': 'linear-gradient(-45deg, #e0cda1, #8d6e63, #8c7b75, #5d4037)',
+            '--receiver-bubble-gradient':
+              'linear-gradient(to right, rgba(215, 204, 200, 0.8), rgba(255, 255, 255, 0.8))',
+            '--sender-bubble-gradient': 'linear-gradient(to left, rgba(141, 110, 99, 0.8), rgba(161, 136, 127, 0.8))',
+            '--focus-shadow': 'rgba(141, 110, 99, 0.3)',
+            '--random-quote-bg': 'rgba(239, 235, 233, 0.7)',
+            '--breathe-shadow': 'rgba(93, 64, 55, 0.25)',
+          },
+          backgrounds: {
+            body: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23efebe9"/><path d="M0,50 Q25,30 50,50 T100,50" stroke="%23d7ccc8" stroke-width="2" fill="none"/></svg>\')',
+            contacts: "url('https://files.catbox.moe/4kb7h3.jpg')",
+            messages: "url('https://files.catbox.moe/gzvywe.png')",
+          },
+        },
+        {
+          name: 'blue',
+          colors: {
+            '--primary': '#6495ED',
+            '--secondary': '#ADD8E6',
+            '--accent': '#4682B4',
+            '--text': '#2c3e50',
+            '--light': '#F0F8FF',
+            '--header-gradient': 'linear-gradient(-45deg, #a0c4ff, #87CEEB, #6495ED, #4682B4)',
+            '--receiver-bubble-gradient':
+              'linear-gradient(to right, rgba(176, 224, 230, 0.8), rgba(240, 248, 255, 0.8))',
+            '--sender-bubble-gradient': 'linear-gradient(to left, rgba(100, 149, 237, 0.8), rgba(135, 206, 235, 0.8))',
+            '--focus-shadow': 'rgba(70, 130, 180, 0.3)',
+            '--random-quote-bg': 'rgba(240, 248, 255, 0.7)',
+            '--breathe-shadow': 'rgba(70, 130, 180, 0.25)',
+          },
+          backgrounds: {
+            body: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23F0F8FF"/><path d="M0,50 Q25,30 50,50 T100,50" stroke="%23ADD8E6" stroke-width="2" fill="none"/></svg>\')',
+            contacts: "url('https://files.catbox.moe/veik28.jpg')",
+            messages: "url('https://files.catbox.moe/lnu989.jpg')",
+          },
+        },
+      ];
+
+      let currentThemeIndex = 0;
+      let lastDataSourceContent = '';
+      let currentContact = null;
+      let contactsData = [];
+      let previousMessages = {};
+      let tempMessages = {};
+
+      const quotes = [
+        '瑾：{{user}}大人慧眼识珠，此画风骨确有可取之处。',
+        '瑜：大人看的是山水，可怀瑜看的，从来都只是您。',
+        '瑾：天色已晚，大人赏画之余，还请注意添衣，切莫着凉。',
+        '瑜：兄长只会让您添衣，但他却不知，怀瑜的心，可以为您燃起一炉火。',
+        '瑾：若大人喜欢，怀瑾可为您寻来更多此等风格的画作。',
+        '瑜：兄长找来的画再多，也不过是凡品，怀瑜的画，每一笔都蘸着对您的思念。',
+        '瑾：此画意境，令怀瑾想起《夫范》中的‘静心’二字。',
+        '瑜：兄长的心静如止水，我的心却为您掀起滔天巨浪。',
+        '瑾：弟弟也擅丹青，不知他见了此画，会作何感想。',
+        '瑜：我能有什么感想？无非是再看一次兄长将世间美好占为己有，包括…您的目光。',
+        '瑾：能为大人分忧，是怀瑾的本分，也是荣幸。',
+        '瑜：能为大人解乏，是怀瑜的本能，也是渴望。',
+        '瑾：这山间虽有雾气，但远方日光明媚，正如大人之风姿，磊落坦荡。',
+        '瑜：这雾正好，可以藏住我，让您找不到我，只能为我着急。',
+        '瑾：看见此画，怀瑾便想为大人抚琴一曲，以助雅兴。',
+        '瑜：兄长的琴声四平八稳，我的琴声，只想乱了您的心。',
+        '瑾：不知大人是否也喜爱兰花？其品性高洁，正如您一般。',
+        '瑜：比起兰花，我更愿做缠绕您的藤，至死方休。',
+        '瑾：我会将此画的精妙之处说与弟弟听，让他也学习一番。',
+        '瑜：兄长总想教我，他怎么不明白，我唯一想学的，是如何得到您的心。',
+        '瑾：山水有相逢，怀瑾亦盼能常伴大人左右，聆听教诲。',
+        '瑜：我不信相逢，我只求，能将您牢牢抓在手中。',
+        '瑾：这画卷虽美，却不及大人万一。',
+        '瑜：您才是这世间，唯一的绝色。',
+        '瑾：请恕怀瑾愚钝，未能完全领会画中深意，还望大人不吝赐教。',
+        '瑜：此画的深意，便是‘等待’。大人，您让我等了太久。',
+        '瑾：大人府上的茶总是极好的，配上此画，相得益彰。',
+        '瑜：茶有什么好喝的，您尝尝我的眼泪，咸的，但滚烫。',
+        '瑾：若您不嫌弃，怀瑾愿为您研墨，您亲自作一幅如何？',
+        '瑜：不必劳烦大人动笔，您只要躺着，让我来将您画下，藏起来，只给我一个人看。',
+      ];
+
+      const SENDER_AVATARS = {
+        顾怀瑜: 'https://files.catbox.moe/kq4ft9.jpg',
+        顾怀瑾: 'https://files.catbox.moe/f18jm2.jpg',
+        握瑾怀瑜: 'https://files.catbox.moe/aeea20.jpg',
+      };
+
+      //
+      const CURRENT_USER_ID = '{{user}}';
+
+      // 验证AI回复是否包含正确的标签格式
+      function validateAIReplyTags(aiReplyText, currentContact) {
+        const isGroupChat = currentContact.id.startsWith('group_');
+        const currentContactName = currentContact.name;
+
+        if (isGroupChat) {
+          // 检查是否包含正确的群聊标签
+          const groupTagPattern = new RegExp(`\\[多人小笺:${currentContactName}\\]`, 'i');
+          const hasGroupTag = groupTagPattern.test(aiReplyText);
+
+          // 检查是否错误包含了私聊标签
+          const privateTagPattern = new RegExp(
+            `\\[(?:{{user}}|你|user)和.+?的私密小笺\\]|\\[.+?和(?:{{user}}|你|user)的私密小笺\\]`,
+            'i',
+          );
+          const hasPrivateTag = privateTagPattern.test(aiReplyText);
+
+          return { hasCorrectTag: hasGroupTag, hasWrongTag: hasPrivateTag };
+        } else {
+          // 检查是否包含正确的私聊标签
+          const privateTagPattern = new RegExp(
+            `\\[(?:(?:{{user}}|你|user)和${currentContactName}|${currentContactName}和(?:{{user}}|你|user))的私密小笺\\]`,
+            'i',
+          );
+          const hasPrivateTag = privateTagPattern.test(aiReplyText);
+
+          // 检查是否错误包含了群聊标签
+          const groupTagPattern = new RegExp(`\\[多人小笺:.+?\\]`, 'i');
+          const hasGroupTag = groupTagPattern.test(aiReplyText);
+
+          return { hasCorrectTag: hasPrivateTag, hasWrongTag: hasGroupTag };
+        }
+      }
+
+      function applyTheme(theme) {
+        const root = document.documentElement;
+        for (const [key, value] of Object.entries(theme.colors)) {
+          root.style.setProperty(key, value);
+        }
+        document.body.style.background = theme.backgrounds.body;
+        document.getElementById('contactsPage').style.backgroundImage = theme.backgrounds.contacts;
+        document.getElementById('messageContainer').style.backgroundImage = theme.backgrounds.messages;
+      }
+
+      function parseDataSource(forceReset = false) {
+        if (forceReset) {
+          tempMessages = {};
+        }
+        const dataContainer = document.getElementById('data-source');
+        if (!dataContainer) {
+          return [];
+        }
+
+        let rawText = (dataContainer.textContent || dataContainer.innerText)
+          .replace(/<鱼雁小笺>/g, '鱼雁小笺_START')
+          .replace(/<\/鱼雁小笺>/g, '鱼雁小笺_END');
+
+        // 如果数据源为空或只有标签，返回空数组
+        if (!rawText || rawText.trim() === '鱼雁小笺_START' || rawText.trim() === '') {
+          return [];
+        }
+
+        // 改进的分割逻辑，更精确地识别标签
+        const sections = rawText
+          .split(/(?=\[(?:{{user}}|你|user)和.+?的私密小笺\]|\[.+?和(?:{{user}}|你|user)的私密小笺\]|\[多人小笺:.+?\])/)
+          .filter(s => s.trim() !== '' && s.trim() !== '鱼雁小笺_START');
+
+        const contacts = [];
+
+        for (const section of sections) {
+          // 更精确的私密小笺匹配
+          const privateMatch = section.match(
+            /\[(?:(?:{{user}}|你|user)和(.+?)|(.+?)和(?:{{user}}|你|user))的私密小笺\]([\s\S]*)/,
+          );
+
+          // 更精确的多人小笺匹配
+          const groupMatch = section.match(/\[多人小笺:([\s\S]+?)\]\s*([\s\S]*)/);
+
+          const messageRegex = /\[([^\|]+)\|([^\|]+)\|([^\]]+)\]/g;
+          let msgMatch;
+
+          if (privateMatch) {
+            const partnerName = (privateMatch[1] || privateMatch[2]).trim();
+            const messagesContent = privateMatch[3];
+            const messages = [];
+
+            while ((msgMatch = messageRegex.exec(messagesContent)) !== null) {
+              let senderName = msgMatch[1].replace(/小笺|最后一条/g, '').trim();
+
+              if (senderName === '你' || senderName === 'user') {
+                senderName = CURRENT_USER_ID;
+              }
+              messages.push({ sender: senderName, text: msgMatch[2], time: msgMatch[3] });
+            }
+
+            contacts.push({
+              id: partnerName,
+              name: partnerName,
+              avatarUrl: SENDER_AVATARS[partnerName] || '',
+              lastMessage: messages.length > 0 ? messages[messages.length - 1] : { text: '', time: '' },
+              messages: messages,
+              chatType: 'private', // 添加聊天类型标识
+            });
+          } else if (groupMatch) {
+            const groupName = groupMatch[1].trim();
+            const messagesContent = groupMatch[2];
+            const messages = [];
+            const members = new Set();
+
+            while ((msgMatch = messageRegex.exec(messagesContent)) !== null) {
+              let senderName = msgMatch[1].replace(/小笺|最后一条/g, '').trim();
+              if (senderName === '你' || senderName === 'user') {
+                senderName = CURRENT_USER_ID;
+              }
+              if (senderName !== CURRENT_USER_ID) {
+                members.add(senderName);
+              }
+              messages.push({ sender: senderName, text: msgMatch[2], time: msgMatch[3] });
+            }
+
+            contacts.push({
+              id: `group_${groupName}`,
+              name: groupName,
+              avatarUrl: SENDER_AVATARS[groupName] || '',
+              lastMessage: messages.length > 0 ? messages[messages.length - 1] : { text: '', time: '' },
+              messages: messages,
+              members: Array.from(members),
+              chatType: 'group', // 添加聊天类型标识
+            });
+          }
+        }
+        return contacts;
+      }
+
+      function initContacts() {
+        const contactList = document.getElementById('contactList');
+        if (!contactList) return;
+        contactList.innerHTML = '';
+
+        contactsData.forEach(contact => {
+          const lastStoredMessage = previousMessages[contact.id];
+          const currentLastMessage = contact.lastMessage;
+          // 判断新消息时，统一使用 CURRENT_USER_ID
+          contact.isNew =
+            currentLastMessage.text &&
+            currentLastMessage.sender !== CURRENT_USER_ID &&
+            (!lastStoredMessage || JSON.stringify(lastStoredMessage) !== JSON.stringify(currentLastMessage));
+        });
+
+        contactsData.forEach(contact => {
+          const li = document.createElement('li');
+          li.className = 'contact-item';
+          if (contact.isNew) {
+            li.classList.add('new');
+          }
+
+          let messagePreview = contact.lastMessage.text || '';
+          if (messagePreview.length > 8) {
+            messagePreview = messagePreview.substring(0, 8) + '…';
+          }
+
+          li.innerHTML = `
+                    <div class="avatar-wrapper">
+                        <img class="avatar" src="${contact.avatarUrl}" alt="${contact.name}">
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name-wrapper">
+                            <div class="contact-name">${contact.name}</div>
+                            <div class="new-badge">新</div>
+                        </div>
+                        <div class="last-message">${messagePreview}</div>
+                    </div>
+                `;
+          li.addEventListener('click', () => {
+            openChat(contact);
+            if (contact.isNew) {
+              li.classList.remove('new');
+              previousMessages[contact.id] = contact.lastMessage;
+              localStorage.setItem('previousMessages', JSON.stringify(previousMessages));
+            }
+          });
+          contactList.appendChild(li);
+        });
+      }
+
+      function openChat(contact) {
+        currentContact = contact;
+        const chatTitle = document.getElementById('chatTitle');
+        const messageList = document.getElementById('messageList');
+        const chatPage = document.getElementById('chatPage');
+        const messageInput = document.getElementById('messageInput');
+
+        if (!chatTitle || !messageList || !chatPage) return;
+
+        chatTitle.innerHTML = `
+                <img class="chat-avatar" src="${contact.avatarUrl}" alt="${contact.name}">
+                <span>${contact.name}</span>
+            `;
+        messageList.innerHTML = '';
+        contact.messages.forEach(message => {
+          addMessageToChat(message.text, message.sender === CURRENT_USER_ID, message.time, message.sender);
+        });
+
+        if (tempMessages[contact.id]) {
+          tempMessages[contact.id].forEach(message => {
+            addMessageToChat(message.text, message.sender === CURRENT_USER_ID, message.time, message.sender);
+          });
+        }
+        if (messageInput) {
+          messageInput.value = '';
+        }
+
+        chatPage.classList.add('active');
+      }
+
+      function addMessageToChat(text, isSender, time, senderId = '') {
+        const messageList = document.getElementById('messageList');
+        if (!messageList) return;
+
+        const li = document.createElement('li');
+        li.className = `message-item ${isSender ? 'sender' : 'receiver'}`;
+
+        // 为消息添加唯一ID
+        const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        li.setAttribute('data-message-id', messageId);
+        li.setAttribute('data-sender', senderId || (isSender ? CURRENT_USER_ID : ''));
+        li.setAttribute('data-text', text);
+        li.setAttribute('data-time', time);
+
+        let badgeHTML = '';
+        if (currentContact && currentContact.id.startsWith('group_') && !isSender) {
+          if (senderId === '顾怀瑾') {
+            badgeHTML = '<div class="sender-badge jin">瑾</div>';
+          } else if (senderId === '顾怀瑜') {
+            badgeHTML = '<div class="sender-badge yu">瑜</div>';
+          }
+        }
+
+        li.innerHTML = `
+                ${badgeHTML}
+                <div class="message-content-wrapper">
+                    <div class="message-content">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+        // 添加长按删除功能
+        addLongPressDeleteHandler(li);
+
+        messageList.appendChild(li);
+        const messageContainer = document.getElementById('messageContainer');
+        if (messageContainer) messageContainer.scrollTop = messageContainer.scrollHeight;
+      }
+
+      function getCurrentTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      // 添加长按删除功能
+      function addLongPressDeleteHandler(messageElement) {
+        let longPressTimer = null;
+
+        const startLongPress = e => {
+          e.preventDefault();
+
+          longPressTimer = setTimeout(() => {
+            // 添加震动反馈（如果设备支持）
+            if (navigator.vibrate) {
+              navigator.vibrate(50);
+            }
+
+            // 直接显示删除确认对话框
+            showDeleteConfirmDialog(messageElement);
+          }, 500); // 500ms长按触发
+        };
+
+        const cancelLongPress = () => {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+        };
+
+        // 鼠标事件
+        messageElement.addEventListener('mousedown', startLongPress);
+        messageElement.addEventListener('mouseup', cancelLongPress);
+        messageElement.addEventListener('mouseleave', cancelLongPress);
+
+        // 触摸事件
+        messageElement.addEventListener('touchstart', startLongPress, { passive: false });
+        messageElement.addEventListener('touchend', cancelLongPress);
+        messageElement.addEventListener('touchcancel', cancelLongPress);
+        messageElement.addEventListener('touchmove', cancelLongPress);
+      }
+
+      // 显示删除确认对话框
+      function showDeleteConfirmDialog(messageElement) {
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        const messageText = messageElement.getAttribute('data-text');
+        const sender = messageElement.getAttribute('data-sender');
+        const messageContent = document.getElementById('deleteConfirmMessage');
+
+        // 设置确认消息内容
+        let senderName = '';
+        if (sender === CURRENT_USER_ID) {
+          senderName = '您';
+        } else if (sender === '顾怀瑾') {
+          senderName = '怀瑾';
+        } else if (sender === '顾怀瑜') {
+          senderName = '怀瑜';
+        } else {
+          senderName = sender;
+        }
+
+        const truncatedText = messageText.length > 20 ? messageText.substring(0, 20) + '...' : messageText;
+        messageContent.textContent = `确定要删除${senderName}的这条消息吗？\n"${truncatedText}"`;
+
+        // 显示对话框
+        overlay.classList.add('show');
+
+        // 绑定按钮事件
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        const cancelBtn = document.getElementById('deleteCancelBtn');
+
+        const handleConfirm = () => {
+          hideDeleteConfirmDialog();
+          deleteMessage(messageElement);
+          confirmBtn.removeEventListener('click', handleConfirm);
+          cancelBtn.removeEventListener('click', handleCancel);
+          overlay.removeEventListener('click', handleOverlayClick);
+        };
+
+        const handleCancel = () => {
+          hideDeleteConfirmDialog();
+          confirmBtn.removeEventListener('click', handleConfirm);
+          cancelBtn.removeEventListener('click', handleCancel);
+          overlay.removeEventListener('click', handleOverlayClick);
+        };
+
+        const handleOverlayClick = e => {
+          if (e.target === overlay) {
+            handleCancel();
+          }
+        };
+
+        confirmBtn.addEventListener('click', handleConfirm);
+        cancelBtn.addEventListener('click', handleCancel);
+        overlay.addEventListener('click', handleOverlayClick);
+
+        // ESC键取消
+        const handleEscKey = e => {
+          if (e.key === 'Escape') {
+            handleCancel();
+            document.removeEventListener('keydown', handleEscKey);
+          }
+        };
+        document.addEventListener('keydown', handleEscKey);
+      }
+
+      // 隐藏删除确认对话框
+      function hideDeleteConfirmDialog() {
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        overlay.classList.remove('show');
+      }
+
+      // 删除消息函数
+      async function deleteMessage(messageElement) {
+        if (!currentContact || !messageElement) return;
+
+        const messageId = messageElement.getAttribute('data-message-id');
+        const sender = messageElement.getAttribute('data-sender');
+        const text = messageElement.getAttribute('data-text');
+        const time = messageElement.getAttribute('data-time');
+
+        // 添加删除动画
+        messageElement.style.transition = 'all 0.3s ease';
+        messageElement.style.transform = 'translateX(-100%)';
+        messageElement.style.opacity = '0';
+
+        setTimeout(() => {
+          // 从DOM中移除消息
+          messageElement.remove();
+        }, 300);
+
+        // 从临时消息存储中删除
+        if (tempMessages[currentContact.id]) {
+          tempMessages[currentContact.id] = tempMessages[currentContact.id].filter(
+            msg => !(msg.sender === sender && msg.text === text && msg.time === time),
+          );
+        }
+
+        // 从原始数据源中删除消息
+        try {
+          await removeMessageFromDataSource(currentContact, sender, text, time);
+        } catch (error) {
+          // 静默处理错误
+        }
+      }
+
+      // 从数据源中删除消息
+      async function removeMessageFromDataSource(contact, sender, text, time) {
+        const dataSource = document.getElementById('data-source');
+        if (!dataSource) return;
+
+        const currentContent = dataSource.textContent;
+        const yujianMatch = currentContent.match(/<鱼雁小笺>([\s\S]*?)<\/鱼雁小笺>/);
+        let yujianContent = yujianMatch ? yujianMatch[1] : currentContent;
+
+        // 构建要删除的消息格式
+        const senderName = sender === CURRENT_USER_ID ? '{{user}}' : sender;
+        const messageToDelete = `[${senderName}|${text}|${time}]`;
+
+        // 从内容中删除该消息
+        const lines = yujianContent.split('\n');
+        const filteredLines = lines.filter(line => line.trim() !== messageToDelete);
+        const newYujianContent = filteredLines.join('\n');
+
+        const updatedText = `<鱼雁小笺>\n${newYujianContent.trim()}\n</鱼雁小笺>`;
+
+        // 更新数据源
+        dataSource.textContent = updatedText;
+
+        // 使用SillyTavern的方式保存更新
+        if (typeof setChatMessages === 'function') {
+          const currentId = typeof getCurrentMessageId === 'function' ? getCurrentMessageId() : 0;
+          await setChatMessages([{ message_id: currentId, message: updatedText }], { refresh: 'none' });
+        }
+      }
+
+      // 过滤AI回复，只提取符合格式的小笺内容
+      function filterAIReply(aiReplyText, currentContact) {
+        const filteredMessages = [];
+        const isGroupChat = currentContact.id.startsWith('group_');
+        const currentContactName = currentContact.name;
+
+        // 首先按聊天标签分割AI回复，只处理当前聊天的部分
+        const currentChatContent = extractCurrentChatContent(aiReplyText, currentContact);
+
+        if (!currentChatContent) {
+          // 如果没有找到当前聊天的内容，返回空数组
+          return filteredMessages;
+        }
+
+        // 匹配小笺格式：[发送者|内容|时间] - 改进版，支持省略号等特殊字符
+        const messageRegex = /\[([^|\]]+)\|([^|\]]*?)\|([^|\]]+)\]/g;
+        let match;
+
+        while ((match = messageRegex.exec(currentChatContent)) !== null) {
+          let senderName = match[1].trim();
+          const messageContent = match[2].trim();
+          const messageTime = match[3].trim();
+
+          // 验证内容不为空（包括只有省略号的情况）
+          if (!messageContent || messageContent === '') {
+            continue;
+          }
+
+          // 处理发送者名称 - 统一识别用户身份
+          if (
+            senderName === '你' ||
+            senderName === 'user' ||
+            senderName === '{{user}}' ||
+            senderName === CURRENT_USER_ID
+          ) {
+            // 这是用户的消息，跳过不处理（因为用户消息已经在发送时添加了）
+            continue;
+          }
+
+          // 只处理AI角色的回复消息
+          if (messageContent) {
+            // 判断消息是否属于当前聊天 - 更严格的验证
+            let shouldInclude = false;
+
+            if (isGroupChat) {
+              // 多人群聊：严格检查发送者是否是当前群的成员
+              if (currentContact.members && currentContact.members.includes(senderName)) {
+                shouldInclude = true;
+              }
+              // 特殊情况：如果是"握瑾怀瑜"群聊，只允许顾怀瑾和顾怀瑜发言
+              else if (currentContactName === '握瑾怀瑜' && (senderName === '顾怀瑾' || senderName === '顾怀瑜')) {
+                shouldInclude = true;
+              }
+            } else {
+              // 个人私聊：严格只显示当前联系人的消息
+              if (senderName === currentContactName) {
+                shouldInclude = true;
+              }
+            }
+
+            if (shouldInclude) {
+              filteredMessages.push({
+                sender: senderName,
+                text: messageContent,
+                time: messageTime,
+              });
+            }
+          }
+        }
+
+        return filteredMessages;
+      }
+
+      // 提取当前聊天的内容部分
+      function extractCurrentChatContent(aiReplyText, currentContact) {
+        const isGroupChat = currentContact.id.startsWith('group_');
+        const currentContactName = currentContact.name;
+
+        let targetTag;
+        if (isGroupChat) {
+          targetTag = `[多人小笺:${currentContactName}]`;
+        } else {
+          // 私聊可能有两种格式
+          targetTag = `[{{user}}和${currentContactName}的私密小笺]`;
+          const alternativeTag = `[${currentContactName}和{{user}}的私密小笺]`;
+
+          // 检查哪种格式存在
+          if (aiReplyText.includes(alternativeTag)) {
+            targetTag = alternativeTag;
+          }
+        }
+
+        // 查找目标标签的位置
+        const tagIndex = aiReplyText.indexOf(targetTag);
+        if (tagIndex === -1) {
+          // 没有找到当前聊天的标签，返回null
+          return null;
+        }
+
+        // 从标签开始提取内容
+        const contentStart = tagIndex + targetTag.length;
+        let contentEnd = aiReplyText.length;
+
+        // 查找下一个聊天标签的位置，作为当前聊天内容的结束位置
+        const nextTagPatterns = [
+          /\[(?:{{user}}|你|user)和.+?的私密小笺\]/g,
+          /\[.+?和(?:{{user}}|你|user)的私密小笺\]/g,
+          /\[多人小笺:.+?\]/g,
+        ];
+
+        for (const pattern of nextTagPatterns) {
+          pattern.lastIndex = contentStart; // 从当前标签后开始搜索
+          const nextMatch = pattern.exec(aiReplyText);
+          if (nextMatch && nextMatch.index < contentEnd) {
+            contentEnd = nextMatch.index;
+          }
+        }
+
+        return aiReplyText.substring(contentStart, contentEnd).trim();
+      }
+
+      // 处理AI回复中的所有聊天内容
+      function processAllChatsInAIReply(aiReplyText) {
+        const allChatMessages = {};
+
+        // 识别所有聊天标签
+        const chatTagPatterns = [
+          /\[(?:{{user}}|你|user)和(.+?)的私密小笺\]/g,
+          /\[(.+?)和(?:{{user}}|你|user)的私密小笺\]/g,
+          /\[多人小笺:(.+?)\]/g,
+        ];
+
+        const foundChats = [];
+
+        // 查找所有聊天标签
+        chatTagPatterns.forEach((pattern, patternIndex) => {
+          let match;
+          pattern.lastIndex = 0; // 重置正则表达式
+          while ((match = pattern.exec(aiReplyText)) !== null) {
+            const chatName = match[1].trim();
+            const isGroupChat = patternIndex === 2; // 第三个模式是群聊
+            const tagStart = match.index;
+            const fullTag = match[0];
+
+            foundChats.push({
+              name: chatName,
+              isGroup: isGroupChat,
+              tagStart: tagStart,
+              fullTag: fullTag,
+              id: isGroupChat ? `group_${chatName}` : chatName,
+            });
+          }
+        });
+
+        // 按标签位置排序
+        foundChats.sort((a, b) => a.tagStart - b.tagStart);
+
+        // 提取每个聊天的内容
+        foundChats.forEach((chat, index) => {
+          const contentStart = chat.tagStart + chat.fullTag.length;
+          let contentEnd = aiReplyText.length;
+
+          // 找到下一个聊天标签的位置
+          if (index + 1 < foundChats.length) {
+            contentEnd = foundChats[index + 1].tagStart;
+          }
+
+          const chatContent = aiReplyText.substring(contentStart, contentEnd).trim();
+
+          if (chatContent) {
+            // 解析这个聊天的消息
+            const messages = parseMessagesFromContent(chatContent, chat);
+            if (messages.length > 0) {
+              allChatMessages[chat.id] = {
+                chatInfo: chat,
+                messages: messages,
+              };
+            }
+          }
+        });
+
+        return allChatMessages;
+      }
+
+      // 从聊天内容中解析消息
+      function parseMessagesFromContent(content, chatInfo) {
+        const messages = [];
+        const messageRegex = /\[([^|\]]+)\|([^|\]]*?)\|([^|\]]+)\]/g;
+        let match;
+
+        while ((match = messageRegex.exec(content)) !== null) {
+          let senderName = match[1].trim();
+          const messageContent = match[2].trim();
+          const messageTime = match[3].trim();
+
+          // 验证内容不为空
+          if (!messageContent || messageContent === '') {
+            continue;
+          }
+
+          // 处理发送者名称
+          if (
+            senderName === '你' ||
+            senderName === 'user' ||
+            senderName === '{{user}}' ||
+            senderName === CURRENT_USER_ID
+          ) {
+            // 跳过用户消息（用户消息已经在发送时添加了）
+            continue;
+          }
+
+          // 验证发送者是否属于当前聊天
+          let isValidSender = false;
+
+          if (chatInfo.isGroup) {
+            // 群聊：检查发送者是否是群成员
+            const contact = contactsData.find(c => c.id === chatInfo.id);
+            if (contact && contact.members && contact.members.includes(senderName)) {
+              isValidSender = true;
+            }
+            // 特殊情况：握瑾怀瑜群聊
+            else if (chatInfo.name === '握瑾怀瑜' && (senderName === '顾怀瑾' || senderName === '顾怀瑜')) {
+              isValidSender = true;
+            }
+          } else {
+            // 私聊：检查发送者是否是当前联系人
+            if (senderName === chatInfo.name) {
+              isValidSender = true;
+            }
+          }
+
+          if (isValidSender) {
+            messages.push({
+              sender: senderName,
+              text: messageContent,
+              time: messageTime,
+            });
+          }
+        }
+
+        return messages;
+      }
+
+      // 找到聊天中插入新消息的正确位置（在最后一条消息后面）
+      function findInsertPositionForChat(content, chatTag, chatTagIndex) {
+        // 从聊天标签开始搜索
+        const searchStart = chatTagIndex + chatTag.length;
+
+        // 查找下一个聊天标签的位置，作为当前聊天的结束位置
+        const nextChatTagPatterns = [
+          /\[(?:{{user}}|你|user)和.+?的私密小笺\]/g,
+          /\[.+?和(?:{{user}}|你|user)的私密小笺\]/g,
+          /\[多人小笺:.+?\]/g,
+        ];
+
+        let chatEndPosition = content.length;
+
+        for (const pattern of nextChatTagPatterns) {
+          pattern.lastIndex = searchStart;
+          const nextMatch = pattern.exec(content);
+          if (nextMatch && nextMatch.index < chatEndPosition) {
+            chatEndPosition = nextMatch.index;
+          }
+        }
+
+        // 在当前聊天范围内查找最后一条消息
+        const chatContent = content.substring(searchStart, chatEndPosition);
+        const messagePattern = /\[[^\|\]]+\|[^\|\]]*\|[^\]]+\]/g;
+        let lastMessageEnd = searchStart;
+        let match;
+
+        while ((match = messagePattern.exec(chatContent)) !== null) {
+          lastMessageEnd = searchStart + match.index + match[0].length;
+        }
+
+        // 找到最后一条消息后的换行位置
+        let insertPosition = lastMessageEnd;
+        while (
+          insertPosition < chatEndPosition &&
+          (content[insertPosition] === '\n' || content[insertPosition] === '\r')
+        ) {
+          insertPosition++;
+        }
+
+        return insertPosition;
+      }
+
+      // 找到聊天的结束位置
+      function findChatEndPosition(content, chatTagIndex) {
+        const searchStart = chatTagIndex;
+
+        // 查找下一个聊天标签的位置
+        const nextChatTagPatterns = [
+          /\[(?:{{user}}|你|user)和.+?的私密小笺\]/g,
+          /\[.+?和(?:{{user}}|你|user)的私密小笺\]/g,
+          /\[多人小笺:.+?\]/g,
+        ];
+
+        let chatEndPosition = content.length;
+
+        for (const pattern of nextChatTagPatterns) {
+          pattern.lastIndex = searchStart + 1;
+          const nextMatch = pattern.exec(content);
+          if (nextMatch && nextMatch.index < chatEndPosition) {
+            chatEndPosition = nextMatch.index;
+          }
+        }
+
+        // 检查是否有</鱼雁小笺>标签
+        const endTagIndex = content.indexOf('</鱼雁小笺>', searchStart);
+        if (endTagIndex !== -1 && endTagIndex < chatEndPosition) {
+          chatEndPosition = endTagIndex;
+        }
+
+        return chatEndPosition;
+      }
+
+      // 保存所有聊天的消息到数据源 - 只添加新消息，不重复旧内容
+      async function saveAllChatsToDataSource(allChatMessages) {
+        const dataSource = document.getElementById('data-source');
+        if (!dataSource) return;
+
+        // 获取当前数据源内容
+        let currentContent = dataSource.textContent;
+
+        // 为每个聊天添加新消息
+        for (const [chatId, chatData] of Object.entries(allChatMessages)) {
+          const { chatInfo, messages } = chatData;
+
+          // 构建聊天标签
+          let chatTag;
+          if (chatInfo.isGroup) {
+            chatTag = `[多人小笺:${chatInfo.name}]`;
+          } else {
+            chatTag = `[{{user}}和${chatInfo.name}的私密小笺]`;
+          }
+
+          // 只添加新消息，不重复现有消息
+          for (const msg of messages) {
+            const messageString = `[${msg.sender}|${msg.text}|${msg.time}]`;
+
+            // 检查这条消息是否已经存在于整个数据源中
+            if (currentContent.includes(messageString)) {
+              continue; // 跳过已存在的消息
+            }
+
+            // 查找聊天标签位置
+            const tagIndex = currentContent.indexOf(chatTag);
+
+            if (tagIndex !== -1) {
+              // 找到现有聊天，在最后添加新消息
+              const insertPosition = findInsertPositionForChat(currentContent, chatTag, tagIndex);
+              const beforeInsert = currentContent.substring(0, insertPosition);
+              const afterInsert = currentContent.substring(insertPosition);
+
+              currentContent = beforeInsert + messageString + '\n' + afterInsert;
+            } else {
+              // 没有找到现有聊天，在末尾添加新的聊天部分
+              const yujianMatch = currentContent.match(/<鱼雁小笺>([\s\S]*?)<\/鱼雁小笺>/);
+              if (yujianMatch) {
+                const beforeClosing = currentContent.substring(0, currentContent.lastIndexOf('</鱼雁小笺>'));
+                const afterClosing = '</鱼雁小笺>';
+                currentContent = beforeClosing + '\n\n' + chatTag + '\n' + messageString + '\n' + afterClosing;
+              } else {
+                currentContent += `\n${chatTag}\n${messageString}`;
+              }
+            }
+          }
+        }
+
+        // 确保内容格式正确，包含完整的标签
+        if (!currentContent.includes('<鱼雁小笺>')) {
+          currentContent = `<鱼雁小笺>\n${currentContent}\n</鱼雁小笺>`;
+        }
+        if (!currentContent.includes('</鱼雁小笺>')) {
+          currentContent = currentContent.replace('</鱼雁小笺>', '') + '\n</鱼雁小笺>';
+        }
+
+        // 更新数据源
+        dataSource.textContent = currentContent;
+
+        // 使用SillyTavern的方式保存更新
+        if (typeof setChatMessages === 'function') {
+          const currentId = typeof getCurrentMessageId === 'function' ? getCurrentMessageId() : 0;
+          await setChatMessages([{ message_id: currentId, message: currentContent }], { refresh: 'none' });
+        }
+
+        // 更新全局变量
+        lastDataSourceContent = currentContent;
+      }
+
+      // 确保用户消息已经保存到数据源
+      async function ensureUserMessageSaved(userMessageData, currentContact) {
+        const dataSource = document.getElementById('data-source');
+        if (!dataSource) return;
+
+        // 构建用户消息的格式
+        const userMessageFormat = `[{{user}}|${userMessageData.text}|${userMessageData.time}]`;
+
+        // 检查数据源是否包含这条用户消息
+        const currentContent = dataSource.textContent;
+        if (currentContent.includes(userMessageFormat)) {
+          // 用户消息已经存在，无需重复保存
+          return;
+        }
+
+        // 如果用户消息不存在，重新保存
+        try {
+          await saveMessagesToSillyTavern([userMessageData], currentContact);
+
+          // 等待一小段时间确保保存完成
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } catch (error) {
+          // 静默处理错误
+        }
+      }
+
+      // 使用SillyTavern的方式保存消息到原始楼层
+      async function saveMessagesToSillyTavern(newMessages, currentContact) {
+        if (!newMessages || newMessages.length === 0) return;
+
+        // 构建新消息字符串
+        const formattedMessages = newMessages.map(msg => {
+          const senderName = msg.sender === CURRENT_USER_ID ? '{{user}}' : msg.sender;
+          return `[${senderName}|${msg.text}|${msg.time}]`;
+        });
+
+        const formattedMessage = '\n' + formattedMessages.join('\n');
+
+        // 获取当前消息ID和内容
+        const currentId = typeof getCurrentMessageId === 'function' ? getCurrentMessageId() : 0;
+        const latestText =
+          typeof getChatMessages === 'function'
+            ? getChatMessages(currentId)[0]?.message || '<鱼雁小笺>\n</鱼雁小笺>'
+            : document.getElementById('data-source')?.textContent || '<鱼雁小笺>\n</鱼雁小笺>';
+
+        // 提取<鱼雁小笺>标签内的内容
+        const yujianMatch = latestText.match(/<鱼雁小笺>([\s\S]*?)<\/鱼雁小笺>/);
+        let yujianContent = yujianMatch ? yujianMatch[1] : latestText;
+
+        // 确定聊天标签 - 根据聊天类型生成正确的标签
+        const isGroupChat = currentContact.id.startsWith('group_');
+        let chatTag;
+
+        if (isGroupChat) {
+          chatTag = `[多人小笺:${currentContact.name}]`;
+        } else {
+          chatTag = `[{{user}}和${currentContact.name}的私密小笺]`;
+        }
+
+        let newYujianContent;
+        const blockStartIndex = yujianContent.indexOf(chatTag);
+
+        if (blockStartIndex === -1) {
+          // 没有找到对应的聊天部分，创建新的
+          const separator = yujianContent.trim() === '' ? '' : '\n\n';
+          newYujianContent = yujianContent.trim() + separator + chatTag + formattedMessage;
+        } else {
+          // 找到了对应的聊天部分，在该部分的末尾追加新消息
+          const searchStartIndex = blockStartIndex + chatTag.length;
+
+          // 查找下一个聊天部分的开始位置
+          const nextChatPatterns = [
+            '\n[{{user}}和', // 用户开头的私聊
+            '\n[多人小笺:', // 群聊
+            '\n</鱼雁小笺>', // 结束标签
+          ];
+
+          let nextSectionIndex = yujianContent.length; // 默认到文档末尾
+
+          // 找到最近的下一个部分
+          for (const pattern of nextChatPatterns) {
+            const index = yujianContent.indexOf(pattern, searchStartIndex);
+            if (index !== -1 && index < nextSectionIndex) {
+              nextSectionIndex = index;
+            }
+          }
+
+          // 还需要查找其他人开头的私聊格式，如 [顾怀瑾和{{user}}的私密小笺]
+          const otherPrivateChatRegex = /\n\[[^[]+和{{user}}的私密小笺\]/g;
+          otherPrivateChatRegex.lastIndex = searchStartIndex;
+          const otherPrivateMatch = otherPrivateChatRegex.exec(yujianContent);
+          if (otherPrivateMatch && otherPrivateMatch.index < nextSectionIndex) {
+            nextSectionIndex = otherPrivateMatch.index;
+          }
+
+          // 在当前聊天部分的末尾插入新消息
+          const textBefore = yujianContent.substring(0, nextSectionIndex);
+          const textAfter = yujianContent.substring(nextSectionIndex);
+          newYujianContent = textBefore.trimEnd() + formattedMessage + textAfter;
+        }
+
+        const updatedText = `<鱼雁小笺>\n${newYujianContent.trim()}\n</鱼雁小笺>`;
+
+        // 先更新DOM中的数据源
+        const dataSource = document.getElementById('data-source');
+        if (dataSource) {
+          dataSource.textContent = updatedText;
+        }
+
+        // 使用SillyTavern的setChatMessages函数更新
+        if (typeof setChatMessages === 'function') {
+          await setChatMessages([{ message_id: currentId, message: updatedText }], { refresh: 'none' });
+        }
+
+        // 更新全局变量并触发数据源变化处理
+        lastDataSourceContent = updatedText;
+
+        // 触发数据源变化处理，确保主页面能正确显示
+        setTimeout(() => {
+          if (typeof handleDataSourceChange === 'function') {
+            handleDataSourceChange();
+          }
+        }, 10);
+
+        // 更新全局变量
+        lastDataSourceContent = updatedText;
+      }
+
+      // 直接更新数据源DOM，触发SillyTavern自动保存
+      function updateDataSource(newData) {
+        const dataSource = document.getElementById('data-source');
+        if (dataSource) {
+          // 保存旧内容
+          const oldContent = dataSource.textContent;
+
+          // 直接更新数据源内容
+          dataSource.textContent = newData;
+
+          // 更新全局变量，确保下次检测时能识别变化
+          lastDataSourceContent = newData;
+
+          // 触发多种可能的DOM变化事件
+          try {
+            // 现代浏览器事件
+            const inputEvent = new Event('input', { bubbles: true });
+            dataSource.dispatchEvent(inputEvent);
+
+            const changeEvent = new Event('change', { bubbles: true });
+            dataSource.dispatchEvent(changeEvent);
+
+            // 自定义事件
+            const customEvent = new CustomEvent('dataSourceUpdated', {
+              detail: { oldContent, newContent: newData },
+              bubbles: true,
+            });
+            dataSource.dispatchEvent(customEvent);
+          } catch (e) {
+            // 静默处理错误
+          }
+
+          // 强制触发现有的MutationObserver
+          setTimeout(() => {
+            if (typeof handleDataSourceChange === 'function') {
+              handleDataSourceChange();
+            }
+          }, 10);
+        }
+      }
+
+      async function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        if (!messageInput || !currentContact) return;
+
+        const content = messageInput.value.trim();
+        if (!content) {
+          alert('请在笺中写下些什么。');
+          return;
+        }
+
+        const currentTime = getCurrentTime();
+        const messageData = { text: content, sender: CURRENT_USER_ID, time: currentTime };
+
+        if (!tempMessages[currentContact.id]) {
+          tempMessages[currentContact.id] = [];
+        }
+        tempMessages[currentContact.id].push(messageData);
+
+        // 使用SillyTavern的方式保存用户消息到原始楼层
+        try {
+          await saveMessagesToSillyTavern([messageData], currentContact);
+
+          // 确保用户消息保存完成后再更新全局状态
+          lastDataSourceContent = document.getElementById('data-source').textContent;
+        } catch (error) {
+          // 静默处理错误，不影响界面显示
+        }
+
+        const recipient = currentContact.name;
+        const isGroupChat = currentContact.id.startsWith('group_');
+
+        // 清空输入框
+        messageInput.value = '';
+
+        // 构建简单的用户消息格式
+        const buildUserMessage = () => {
+          const senderName = '{{user}}';
+          return `[${senderName}|${content}|${currentTime}]`;
+        };
+
+        // 调用generate获取AI新回复，只发送用户的当前消息
+        if (typeof generate === 'function') {
+          const userMessage = buildUserMessage();
+
+          // 添加小延迟确保用户消息完全保存
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          // 构建格式要求提示
+          const contactName = currentContact.name;
+          const userReplyText = `回复${contactName}的小笺: ${content}`;
+
+          const formatInstruction = `
+
+请严格按照以下格式要求生成回复，内容必须包裹在<鱼雁小笺></鱼雁小笺>标签内，例如：
+
+<鱼雁小笺>
+[{{user}}和xxx的私密小笺]
+对方小笺的格式为：[xxx|{{小笺内容}}|{{小笺时间}}]
+
+[多人小笺:握瑾怀瑜]
+小笺的格式为：[xxx|{{小笺内容}}|{{小笺时间}}]
+</鱼雁小笺>
+
+重要提示：1.如果{{user}}只回复其中一个人或者多人小笺的内容，那么只需要生成{{user}}回复的那个小笺，其余两个小笺的内容可以不用生成，直到{{user}}选择回复。2.如果回复多人小笺，有概率会触发角色主动发送私聊小笺。3.禁止重复生成小笺内容，只需要生成新的回复内容！
+
+用户消息：${userReplyText}`;
+
+          generate({
+            user_input: formatInstruction,
+            should_stream: false,
+          })
+            .then(async res => {
+              // 处理AI回复 - 获取原始回复文本
+              let aiReplyText = '';
+              if (res && res.response) {
+                aiReplyText = res.response;
+              } else if (typeof res === 'string') {
+                aiReplyText = res;
+              } else {
+                return;
+              }
+
+              // 处理AI回复中的所有聊天内容
+              const allChatMessages = processAllChatsInAIReply(aiReplyText);
+
+              if (Object.keys(allChatMessages).length === 0) {
+                return;
+              }
+
+              // 确保在保存AI回复前，数据源包含最新的用户消息
+              await ensureUserMessageSaved(messageData, currentContact);
+
+              // 保存所有聊天的消息到数据源
+              await saveAllChatsToDataSource(allChatMessages);
+
+              // 不需要手动添加到界面，数据源更新后会自动刷新显示
+            })
+            .catch(error => {
+              alert('AI回复生成失败，请稍后重试。');
+            });
+        } else if (typeof triggerSlash === 'function') {
+          // 如果没有generate函数，回退到原有的triggerSlash方式，但只发送用户消息
+          const userMessage = buildUserMessage();
+          triggerSlash(`/send ${userMessage}|/trigger`);
+        } else {
+          alert('无法发送小笺，当前环境不支持此操作。');
+        }
+      }
+
+      function backToContacts() {
+        const chatPage = document.getElementById('chatPage');
+        if (chatPage) chatPage.classList.remove('active');
+        currentContact = null;
+      }
+
+      function setRandomContent() {
+        const randomImage = document.getElementById('randomImage');
+        const randomQuote = document.getElementById('randomQuote');
+        const imageUrls = [
+          'https://files.catbox.moe/ij39sg.jpeg',
+          'https://files.catbox.moe/ybt41t.jpeg',
+          'https://files.catbox.moe/q6kp1e.jpeg',
+          'https://files.catbox.moe/xdfyfy.jpeg',
+          'https://files.catbox.moe/b3sunb.jpeg',
+          'https://files.catbox.moe/54ee4g.jpeg',
+          'https://files.catbox.moe/pby9iu.jpeg',
+          'https://files.catbox.moe/88hf06.jpeg',
+        ];
+        if (randomImage) {
+          const randomImageIndex = Math.floor(Math.random() * imageUrls.length);
+          randomImage.src = imageUrls[randomImageIndex];
+        }
+        if (randomQuote) {
+          const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
+          let quoteText = quotes[randomQuoteIndex];
+          let userName = '{{user}}';
+          randomQuote.textContent = quoteText.replace(/瑾：|瑜：/g, '').replace('{{user}}', userName);
+          if (quotes[randomQuoteIndex].startsWith('瑾：')) {
+            randomQuote.innerHTML =
+              `<span style="font-weight:bold; color:var(--accent);">瑾：</span>` + randomQuote.textContent;
+          } else if (quotes[randomQuoteIndex].startsWith('瑜：')) {
+            randomQuote.innerHTML =
+              `<span style="font-weight:bold; color:var(--primary);">瑜：</span>` + randomQuote.textContent;
+          }
+        }
+      }
+
+      function handleDataSourceChange() {
+        const dataSource = document.getElementById('data-source');
+        if (!dataSource) return;
+
+        const currentContent = dataSource.textContent;
+
+        if (currentContent !== lastDataSourceContent) {
+          lastDataSourceContent = currentContent;
+
+          // 重新解析数据源
+          const newContactsData = parseDataSource(true);
+
+          // 检查是否有新消息
+          const hasNewMessages = checkForNewMessages(contactsData, newContactsData);
+
+          // 更新联系人数据
+          contactsData = newContactsData;
+
+          // 重新初始化联系人列表
+          initContacts();
+
+          // 如果当前在聊天页面，需要更新当前聊天的消息
+          if (currentContact) {
+            updateCurrentChatIfNeeded();
+          }
+        }
+      }
+
+      // 检查是否有新消息
+      function checkForNewMessages(oldContacts, newContacts) {
+        let hasNew = false;
+
+        newContacts.forEach(newContact => {
+          const oldContact = oldContacts.find(c => c.id === newContact.id);
+
+          if (oldContact) {
+            // 比较最后一条消息
+            const oldLastMessage = oldContact.lastMessage;
+            const newLastMessage = newContact.lastMessage;
+
+            if (
+              newLastMessage.text &&
+              newLastMessage.sender !== CURRENT_USER_ID &&
+              JSON.stringify(oldLastMessage) !== JSON.stringify(newLastMessage)
+            ) {
+              hasNew = true;
+
+              // 触发新消息弹窗
+              const isCurrentContact = currentContact && currentContact.id === newContact.id;
+              const chatInfo = { name: newContact.name, isGroup: newContact.id.startsWith('group_') };
+              showMessageNotification(newLastMessage.sender, newLastMessage.text, isCurrentContact, chatInfo);
+            }
+          } else if (newContact.lastMessage.text && newContact.lastMessage.sender !== CURRENT_USER_ID) {
+            // 新的联系人且有消息
+            hasNew = true;
+
+            // 触发新消息弹窗
+            const isCurrentContact = currentContact && currentContact.id === newContact.id;
+            const chatInfo = { name: newContact.name, isGroup: newContact.id.startsWith('group_') };
+            showMessageNotification(
+              newContact.lastMessage.sender,
+              newContact.lastMessage.text,
+              isCurrentContact,
+              chatInfo,
+            );
+          }
+        });
+
+        return hasNew;
+      }
+
+      // 如果当前在聊天页面，更新聊天内容
+      function updateCurrentChatIfNeeded() {
+        if (!currentContact) return;
+
+        // 找到更新后的当前联系人数据
+        const updatedContact = contactsData.find(c => c.id === currentContact.id);
+        if (!updatedContact) return;
+
+        // 检查是否有新消息需要添加到当前聊天
+        const currentMessages = currentContact.messages || [];
+        const updatedMessages = updatedContact.messages || [];
+
+        if (updatedMessages.length > currentMessages.length) {
+          // 有新消息，添加到当前聊天界面
+          const newMessages = updatedMessages.slice(currentMessages.length);
+          newMessages.forEach(message => {
+            addMessageToChat(message.text, message.sender === CURRENT_USER_ID, message.time, message.sender);
+          });
+
+          // 更新当前联系人的消息数据
+          currentContact.messages = updatedMessages;
+        }
+      }
+
+      // 强制刷新主页面的联系人列表和消息状态
+      function forceRefreshMainPage() {
+        // 重新解析数据源
+        const newContactsData = parseDataSource(true);
+
+        if (newContactsData.length === 0) {
+          // 如果解析结果为空，可能是数据源有问题，稍后重试
+          setTimeout(() => {
+            forceRefreshMainPage();
+          }, 100);
+          return;
+        }
+
+        // 更新联系人数据
+        contactsData = newContactsData;
+
+        // 重新初始化联系人列表
+        initContacts();
+
+        // 如果当前在聊天页面，也需要更新
+        if (currentContact) {
+          updateCurrentChatIfNeeded();
+        }
+      }
+
+      // 监听数据源的直接变化（用于调试和强制更新）
+      function setupDataSourceMonitoring() {
+        const dataSource = document.getElementById('data-source');
+        if (!dataSource) return;
+
+        // 创建一个更敏感的观察器
+        const sensitiveObserver = new MutationObserver(mutations => {
+          let shouldUpdate = false;
+
+          mutations.forEach(mutation => {
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              shouldUpdate = true;
+            }
+          });
+
+          if (shouldUpdate) {
+            // 延迟一点执行，确保数据源完全更新
+            setTimeout(() => {
+              handleDataSourceChange();
+            }, 50);
+          }
+        });
+
+        sensitiveObserver.observe(dataSource, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+          characterDataOldValue: true,
+        });
+      }
+
+      // 全局刷新函数，可以从外部调用
+      window.refreshYujianMainPage = function () {
+        forceRefreshMainPage();
+      };
+
+      // 新消息弹窗功能
+      let notificationTimeout = null;
+      let notificationQueue = [];
+      let isShowingNotification = false;
+
+      function showMessageNotification(senderName, messageText, isCurrentContact = false, chatInfo = null) {
+        // 添加到队列
+        notificationQueue.push({ senderName, messageText, isCurrentContact, chatInfo });
+
+        // 如果当前没有显示弹窗，开始处理队列
+        if (!isShowingNotification) {
+          processNotificationQueue();
+        }
+      }
+
+      function processNotificationQueue() {
+        if (notificationQueue.length === 0) {
+          isShowingNotification = false;
+          return;
+        }
+
+        isShowingNotification = true;
+        const { senderName, messageText, isCurrentContact, chatInfo } = notificationQueue.shift();
+
+        displayNotification(senderName, messageText, isCurrentContact, chatInfo);
+      }
+
+      function displayNotification(senderName, messageText, isCurrentContact = false, chatInfo = null) {
+        const notification = document.getElementById('messageNotification');
+        const content = document.getElementById('notificationContent');
+
+        // 清除之前的定时器
+        if (notificationTimeout) {
+          clearTimeout(notificationTimeout);
+        }
+
+        if (isCurrentContact) {
+          // 当前联系人的消息 - 简单提示
+          notification.className = 'message-notification current-contact';
+          content.innerHTML = `
+            <div class="notification-header">
+              新消息
+              <button class="notification-close" onclick="hideMessageNotification()">×</button>
+            </div>
+            <div class="notification-body">
+              <div class="notification-current-text">🐾他的新信息来啦~</div>
+            </div>
+          `;
+        } else {
+          // 其他联系人的消息 - 详细信息
+          notification.className = 'message-notification';
+
+          let displayName = senderName;
+          let avatarUrl = SENDER_AVATARS[senderName] || '';
+          let displayText = messageText;
+
+          // 如果是群聊消息，显示群聊信息
+          if (chatInfo && chatInfo.isGroup) {
+            displayName = chatInfo.name; // 群聊名字
+            avatarUrl = 'https://files.catbox.moe/aeea20.jpg'; // 群聊头像
+            displayText = `${senderName}: ${messageText}`; // 显示发送者: 消息内容
+          }
+
+          const truncatedText = displayText.length > 45 ? displayText.substring(0, 45) + '...' : displayText;
+
+          // 如果没有头像，使用名字首字作为头像
+          const avatarContent = avatarUrl
+            ? `<img src="${avatarUrl}" alt="${displayName}" class="notification-avatar">`
+            : `<div class="notification-avatar" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">${displayName.charAt(
+                0,
+              )}</div>`;
+
+          content.innerHTML = `
+            <div class="notification-header">
+              新消息
+              <button class="notification-close" onclick="hideMessageNotification()">×</button>
+            </div>
+            <div class="notification-body">
+              ${avatarContent}
+              <div class="notification-content">
+                <div class="notification-name">${displayName}</div>
+                <div class="notification-text">${truncatedText}</div>
+              </div>
+            </div>
+          `;
+        }
+
+        // 显示弹窗
+        notification.classList.add('show');
+
+        // 3秒后自动隐藏并处理下一个
+        notificationTimeout = setTimeout(() => {
+          hideMessageNotification();
+        }, 3000);
+      }
+
+      function hideMessageNotification() {
+        const notification = document.getElementById('messageNotification');
+        notification.classList.remove('show');
+
+        if (notificationTimeout) {
+          clearTimeout(notificationTimeout);
+          notificationTimeout = null;
+        }
+
+        // 延迟一点后处理下一个弹窗，让动画完成
+        setTimeout(() => {
+          processNotificationQueue();
+        }, 400);
+      }
+
+      // 初始化弹窗关闭按钮
+      function initNotificationEvents() {
+        const closeBtn = document.getElementById('notificationClose');
+        const notification = document.getElementById('messageNotification');
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', hideMessageNotification);
+        }
+
+        // 点击弹窗也可以关闭
+        if (notification) {
+          notification.addEventListener('click', hideMessageNotification);
+        }
+      }
+
+      // 全局获取当前状态的函数，用于调试
+      window.getYujianStatus = function () {
+        return {
+          contactsData: contactsData,
+          currentContact: currentContact,
+          tempMessages: tempMessages,
+          lastDataSourceContent: lastDataSourceContent,
+        };
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const savedThemeIndex = localStorage.getItem('chatThemeIndex');
+        if (savedThemeIndex !== null) {
+          currentThemeIndex = parseInt(savedThemeIndex, 10);
+        }
+        applyTheme(themes[currentThemeIndex]);
+
+        const themeToggleButton = document.getElementById('theme-toggle-button');
+        if (themeToggleButton) {
+          themeToggleButton.addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            applyTheme(themes[currentThemeIndex]);
+            localStorage.setItem('chatThemeIndex', currentThemeIndex);
+          });
+        }
+
+        try {
+          previousMessages = JSON.parse(localStorage.getItem('previousMessages')) || {};
+        } catch (e) {
+          previousMessages = {};
+        }
+
+        const sendButton = document.getElementById('sendButton');
+        const messageInput = document.getElementById('messageInput');
+        const backButton = document.getElementById('backButton');
+        const randomImageContainer = document.getElementById('randomImageContainer');
+
+        const dataSource = document.getElementById('data-source');
+        const observer = new MutationObserver(handleDataSourceChange);
+
+        if (dataSource) {
+          observer.observe(dataSource, { childList: true, characterData: true, subtree: true });
+        }
+
+        // 设置额外的数据源监听
+        setupDataSourceMonitoring();
+
+        lastDataSourceContent = dataSource ? dataSource.textContent : '';
+        contactsData = parseDataSource();
+        initContacts();
+        setRandomContent();
+        initNotificationEvents();
+
+        if (sendButton) sendButton.addEventListener('click', sendMessage);
+        if (messageInput)
+          messageInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              sendMessage();
+            }
+          });
+        if (backButton) backButton.addEventListener('click', backToContacts);
+        if (randomImageContainer) randomImageContainer.addEventListener('click', setRandomContent);
+      });
+
+      // *******************不要再用鹤唯的代码了好吗好的*************
+    </script>
+  </body>
+</html>
+```
